@@ -2,17 +2,13 @@
 test(
     "Web test",
     function() {
-        // XXX - this is broken, but it was throwing
-        // an expcetion so everything seemed okay
-        // so we add this here to help.
-        // - SL
-        expect(24);
+        expect(22);
 
         var tester   = new Test.Jackalope ();
         var fixtures = new Test.Jackalope.Fixtures ({
-            "fixture_dir" : "../fixtures/",
+            "fixture_dir" : "fixtures/",
             "repo"        : new Jackalope.Schema.Repository ({
-                spec      : new Jackalope.Schema.Spec({ spec_url : "../spec/spec.json" }),
+                spec      : new Jackalope.Schema.Spec({ spec_url : "spec/spec.json" }),
                 validator : new Jackalope.Schema.Validator ()
             })
         });
@@ -23,7 +19,7 @@ test(
             tester.validation_pass(
                 fixtures.repo.validate(
                     { "$ref" : "schema/types/object" },
-                    fixtures.repo.compiled_schemas["schema/web/" + types[i]]
+                    fixtures.repo.get_compiled_schema_by_uri("schema/web/" + types[i])
                 ),
                 "... validate the " + types[i] + " schema with the object type"
             );
