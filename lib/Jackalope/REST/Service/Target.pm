@@ -5,6 +5,7 @@ our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:STEVAN';
 
 use Try::Tiny;
+use Plack::Request;
 use Data::Dump;
 use Jackalope::REST::Error::InternalServerError;
 
@@ -57,6 +58,16 @@ sub process_operation {
 
 sub sanitize_and_prepare_input {
     my ($self, $r ) = @_;
+
+    if (exists $self->link->{'method'}) {
+        if ($self->link->{'method'} ne $r->method) {
+            Jackalope::REST::Error::MethodNotAllowed->new(
+                allowed_methods => [ $self->link->{'method'} ],
+                message         => ($r->method . ' method is not allowed, expecting ' . $self->link->{'method'})
+            )->throw;
+        }
+    }
+
     $self->check_uri_schema( $r );
     $self->check_data_schema( $r );
 }
@@ -188,6 +199,17 @@ sub check_target_schema {
 }
 
 requires 'execute';
+
+sub to_app {
+    my $self = shift;
+    return sub {
+        my $env = shift;
+        $self->execute(
+            Plack::Request->new( $env ),
+            @{ $env->{'plack.router.match.args'} }
+        );
+    }
+}
 
 no Moose::Role; 1;
 

@@ -3,14 +3,15 @@
 use strict;
 use warnings;
 
-use lib '/Users/stevan/Projects/CPAN/current/Bread-Board/lib';
+use lib '/Users/stevan/Projects/CPAN/current/Bread-Board/lib',
+        '/Users/stevan/Projects/CPAN/current/Plack-App-Path-Router/lib';
 
 use Test::More;
 use Test::Fatal;
 use Test::Moose;
 use Bread::Board;
 use Plack::Test;
-use HTTP::Request::Common;
+use HTTP::Request::Common qw[ GET PUT POST DELETE ];
 
 BEGIN {
     use_ok('Jackalope::REST');
@@ -21,7 +22,7 @@ use Path::Router;
 
 use Plack;
 use Plack::Builder;
-use Plack::App::Path::Router;
+use Plack::App::Path::Router::PSGI;
 
 {
     package My::ShoppingCart::Repo;
@@ -329,7 +330,7 @@ foreach my $service ( $product_service, $user_service, $cart_service ) {
     $service->update_router( $router );
 }
 
-my $app = Plack::App::Path::Router->new( router => $router );
+my $app = Plack::App::Path::Router::PSGI->new( router => $router );
 
 my $serializer = $c->resolve(
     service    => 'Jackalope::Serializer',
@@ -730,15 +731,14 @@ test_psgi( app => $app, client => sub {
         );
     }
 
-    diag("DELETE-ing a new item from cart");
+    diag("PUT-ing to delete the new item from cart");
     {
-        # XX What is the right method here? DELETE to cart would make sense?
         my $req = PUT("http://localhost/cart/1/remove_item" => (
             Content => '{"$id":"3","type_of":"test/product"}'
         ));
         my $res = $cb->($req);
         is($res->code, 202, '... got the right status for removing an item');
-#use Data::Dumper;diag(Dumper($serializer->deserialize($res->content)));
+
         is_deeply(
             $serializer->deserialize( $res->content ),
             {
@@ -810,7 +810,7 @@ test_psgi( app => $app, client => sub {
 
     diag("DELETE-ing cart (with conditional match)");
     {
-        my $req = GET("http://localhost/cart/1/delete" => (
+        my $req = DELETE("http://localhost/cart/1/delete" => (
             'If-Matches' => '6f2b0ecaeb1dfc8fc50c2bb0cae7c685969793ea2aee5016dd2075c76ae40a94'
         ));
         my $res = $cb->($req);

@@ -23,6 +23,31 @@ use Plack;
 use Plack::Builder;
 use Plack::App::Path::Router::PSGI;
 
+{
+    package My::Service;
+    use Moose;
+    extends 'Jackalope::REST::Service';
+
+    use Plack::Middleware::Auth::Basic;
+
+    around 'get_target_for_link' => sub {
+        my $next = shift;
+        my ($self, $link) = @_;
+        if ($link->{'rel'} eq 'read' || $link->{'rel'} eq 'list') {
+            return $self->$next( $link );
+        }
+        else {
+            return Plack::Middleware::Auth::Basic->new(
+                app           => $self->$next( $link )->to_app,
+                authenticator => sub {
+                    my ($username, $password) = @_;
+                    return $username eq 'admin' && $password eq 's3cr3t';
+                }
+            );
+        }
+    };
+}
+
 my $j = Jackalope::REST->new;
 my $c = container $j => as {
 
@@ -40,7 +65,7 @@ my $c = container $j => as {
     typemap 'Jackalope::REST::Resource::Repository::Simple' => infer;
 
     service 'MyService' => (
-        class        => 'Jackalope::REST::Service',
+        class        => 'My::Service',
         dependencies => {
             schema_repository   => 'type:Jackalope::Schema::Repository',
             resource_repository => 'type:Jackalope::REST::Resource::Repository::Simple',
@@ -55,6 +80,7 @@ my $c = container $j => as {
 };
 
 my $service = $c->resolve( service => 'MyService' );
+isa_ok($service, 'My::Service');
 isa_ok($service, 'Jackalope::REST::Service');
 
 isa_ok($service->schema_repository, 'Jackalope::Schema::Repository');
@@ -97,7 +123,8 @@ test_psgi( app => $app, client => sub {
     diag("POSTing resource");
     {
         my $req = POST("http://localhost/create" => (
-            Content => '{"first_name":"Stevan","last_name":"Little","age":37}'
+            Content => '{"first_name":"Stevan","last_name":"Little","age":37}',
+            Authorization => "Basic YWRtaW46czNjcjN0"
         ));
         my $res = $cb->($req);
         is($res->code, 201, '... got the right status for creation');
@@ -186,7 +213,8 @@ test_psgi( app => $app, client => sub {
     diag("PUTing updates to the resource we just posted");
     {
         my $req = PUT("http://localhost/1/edit" => (
-            Content => '{"id":"1","version":"fe982ce14ce2b2a1c097629adecdeb1522a1e0a2ca390673446c930ca5fd11d2","body":{"first_name":"Stevan","last_name":"Little","age":38}}'
+            Content => '{"id":"1","version":"fe982ce14ce2b2a1c097629adecdeb1522a1e0a2ca390673446c930ca5fd11d2","body":{"first_name":"Stevan","last_name":"Little","age":38}}',
+            Authorization => "Basic YWRtaW46czNjcjN0"
         ));
         my $res = $cb->($req);
         is($res->code, 202, '... got the right status for edit');
@@ -244,7 +272,8 @@ test_psgi( app => $app, client => sub {
     diag("DELETEing resource we just updated (with conditional match)");
     {
         my $req = DELETE("http://localhost/1/delete" => (
-            'If-Matches' => '9d4a75302bb634edf050d6b838b050b978bea1460d5879618e8e3ae8c291247f'
+            'If-Matches' => '9d4a75302bb634edf050d6b838b050b978bea1460d5879618e8e3ae8c291247f',
+            Authorization => "Basic YWRtaW46czNjcjN0"
         ));
         my $res = $cb->($req);
         is($res->code, 204, '... got the right status for delete');
@@ -265,7 +294,7 @@ test_psgi( app => $app, client => sub {
 
     diag("Calling the DescribedBy");
     {
-        my $req = GET( "http://localhost/schema");
+        my $req = GET( "http://localhost/schema", Authorization => "Basic YWRtaW46czNjcjN0");
         my $res = $cb->($req);
         is($res->code, 200, '... got the right status for list ');
         is_deeply(
@@ -284,13 +313,28 @@ test_psgi( app => $app, client => sub {
         );
     }
 
-    diag("Errors");
+    diag("Calling method that should fail because of no auth");
     {
-        my $req = GET("http://localhost/1/delete");
+        my $req = GET("http://localhost/schema");
         my $res = $cb->($req);
-        is($res->code, 405, '... got the right status for bad method');
-        is($res->header('Allow'), 'DELETE', '... got the right Allow header');
+        is($res->code, 401, '... got the right status for no auth');
     }
+    {
+        my $req = DELETE("http://localhost/1/delete");
+        my $res = $cb->($req);
+        is($res->code, 401, '... got the right status for no auth');
+    }
+    {
+        my $req = PUT("http://localhost/1/edit");
+        my $res = $cb->($req);
+        is($res->code, 401, '... got the right status for no auth');
+    }
+    {
+        my $req = POST("http://localhost/create");
+        my $res = $cb->($req);
+        is($res->code, 401, '... got the right status for no auth');
+    }
+
 });
 
 
