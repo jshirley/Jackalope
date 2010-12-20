@@ -4,16 +4,13 @@
 - Jackalope::REST::Client
     - write it
 
-- t/
-    - do more error checking in ...
-        - 020-basic-service.t
-        - 021-basic-service-w-middleware.t
-        - 030-multi-schema-service.t
-
-- Jackalope.Schema.Repository
-    - port the remainder of the tests
-        - t/010-schema/111-extends-in-properties.t
-        - t/030-REST/011-schema-web-service-extension.t
+- Jackalope::REST::Service::Directory
+    - write this
+    - this should collect services and key them by schema->id
+      and then the services should have access to them, this
+      should simplify some of the 030-multi-schema-service.t stuff
+      by allowing the resource/ref stuff to find the correct
+      resource-repository for us
 
 - Jackalope::REST::Schema::Spec
     - perhaps support a simpler web/service, maybe a read-only one?
@@ -33,11 +30,17 @@
             - read up on http://en.wikipedia.org/wiki/HTTP_ETag
 
 - Jackalope::REST::Service
+    - look into Plack::Middleware::MethodOverride
     - might want to return 412 Precondition Failed when delete If-Matches fails
     - Caching options
         - we should support eTags
     - Media (binary data)
         - see: http://www.atomenabled.org/developers/protocol/atom-protocol-spec.php#media-link-entries
+
+- Jackalope::REST::Service::Target::DescribedBy
+    - the described-by relation should probably return a more
+      complete (compiled) schema, and any referenced schemas
+      should have their complete URIs, not just the reference
 
 - ponder spliting things up
     - Jackalope
@@ -92,7 +95,6 @@
     - perhaps use that description cleanup method in GenerateSpec on the actual spec
 
 - Test::Jackalope & Test.Jackalope
-    - write .toJSON methods that strip the __compiled_* stuff from the output of schemas
     - validation_fail should also take some kind of
       test to check the right error appears
         - fixtures will need to support this too
@@ -102,6 +104,7 @@
 
 - Jackalope::Schema::Validator::Core
     - make it use Moose types to check against
+    - possibly just compile them down to faster subs or something
 
 - Jackalope::Serializer
     - Jackalope::Serializer::XML (TODO - perigrin)
