@@ -2,7 +2,7 @@
 test(
     "Core test",
     function() {
-        expect(25);
+        expect(32);
 
         var tester   = new Test.Jackalope ();
         var repo     = new Jackalope.Schema.Repository ({
@@ -14,7 +14,7 @@ test(
             "repo"        : repo
         });
 
-        var types = ['ref', 'hyperlink', 'xlink'];
+        var types = ['ref', 'linkrel', 'hyperlink'];
 
         for (var i = 0; i < types.length; i++) {
             tester.validation_pass(

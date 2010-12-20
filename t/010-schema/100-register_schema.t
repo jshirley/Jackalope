@@ -30,19 +30,20 @@ is(exception{
                       "type"        => "string"
                 }
             },
-            "links"=> [
-                {
-                    "rel"      => "self",
+            "links"=> {
+                "self" => {
+                    "rel"           => "self",
+                    "method"        => "GET",
                     "href"          => "product/{id}/view",
                     "target_schema" => { '$ref' => "#" }
                 },
-                {
-                    "rel"    => "edit",
+                "edit" => {
+                    "rel"         => "edit",
                     "href"        => "product/{id}/update",
                     "method"      => "POST",
                     "data_schema" => { '$ref' => "#" }
                 },
-            ]
+            }
         }
     )
 }, undef, '... did not die when registering this schema');
@@ -56,19 +57,20 @@ is(exception{
             "items"       => {
                 '$ref' => "/my_schemas/product"
             },
-            "links" => [
-                {
-                    "rel"      => "/my_schemas/links/product_listing",
+            "links" => {
+                "/my_schemas/links/product_listing" => {
+                    "rel"           => "/my_schemas/links/product_listing",
+                    "method"        => "GET",
                     "href"          => "product/list",
                     "target_schema" => { '$ref' => "#" }
                 },
-                {
-                    "rel"    => "create",
+                "create" => {
+                    "rel"         => "create",
                     "href"        => "product/create",
                     "method"      => "POST",
                     "data_schema" => { '$ref' => "/my_schemas/product" }
                 }
-            ]
+            }
         }
     )
 }, undef, '... did not die when registering this schema');

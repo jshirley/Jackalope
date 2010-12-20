@@ -66,7 +66,7 @@ sub resource {
         additional_properties => {
             links   => {
                 type        => "array",
-                items       => { '$ref' => "schema/core/xlink" },
+                items       => { '$ref' => "schema/core/hyperlink" },
                 description => q[
                     This is a list of links which represent the
                     capabilities of given resource, the consumer of
@@ -117,11 +117,11 @@ sub resource_ref {
         },
         additional_properties => {
             link    => {
-                extends               => { '$ref' => 'schema/core/xlink' },
+                extends               => { '$ref' => 'schema/core/hyperlink' },
                 properties            => { rel    => { type => 'string', literal => 'read' } },
                 additional_properties => { method => { type => 'string', literal => 'GET'  } },
                 description           => q[
-                    This is an optional xlink to read the resource
+                    This is an optional hyperlink to read the resource
                     described, it should only ever be GET since it
                     is only for reading.
                 ]
@@ -154,14 +154,14 @@ sub service {
         id    => 'schema/web/service',
         title => 'This is a simple REST enabled schema',
         type  => 'object',
-        links => [
-            {
+        links => {
+            describedby => {
                 rel           => 'describedby',
                 href          => '/schema',
                 method        => 'GET',
                 target_schema => { '$ref' => 'schema/types/schema' },
             },
-            {
+            list => {
                 rel           => 'list',
                 href          => '/',
                 method        => 'GET',
@@ -176,7 +176,7 @@ sub service {
                     }
                 },
             },
-            {
+            create => {
                 rel           => 'create',
                 href          => '/create',
                 method        => 'POST',
@@ -189,7 +189,7 @@ sub service {
                     }
                 },
             },
-            {
+            read => {
                 rel           => 'read',
                 href          => '/:id',
                 method        => 'GET',
@@ -204,7 +204,7 @@ sub service {
                     id => { type => 'string' }
                 }
             },
-            {
+            edit => {
                 rel           => 'edit',
                 href          => '/:id/edit',
                 method        => 'PUT',
@@ -226,7 +226,7 @@ sub service {
                     id => { type => 'string' }
                 }
             },
-            {
+            delete => {
                 rel           => 'delete',
                 href          => '/:id/delete',
                 method        => 'DELETE',
@@ -234,7 +234,7 @@ sub service {
                     id => { type => 'string' }
                 }
             }
-        ]
+        }
     };
 }
 

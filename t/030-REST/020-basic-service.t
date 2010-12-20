@@ -40,7 +40,7 @@ my $c = container $j => as {
     typemap 'Jackalope::REST::Resource::Repository::Simple' => infer;
 
     service 'MyService' => (
-        class        => 'Jackalope::REST::Service',
+        class        => 'Jackalope::REST::CRUD::Service',
         dependencies => {
             schema_repository   => 'type:Jackalope::Schema::Repository',
             resource_repository => 'type:Jackalope::REST::Resource::Repository::Simple',
@@ -55,7 +55,8 @@ my $c = container $j => as {
 };
 
 my $service = $c->resolve( service => 'MyService' );
-isa_ok($service, 'Jackalope::REST::Service');
+isa_ok($service, 'Jackalope::REST::CRUD::Service');
+does_ok($service, 'Jackalope::REST::Service');
 
 isa_ok($service->schema_repository, 'Jackalope::Schema::Repository');
 isa_ok($service->resource_repository, 'Jackalope::REST::Resource::Repository::Simple');
@@ -113,12 +114,12 @@ test_psgi( app => $app, client => sub {
                 },
                 version => 'fe982ce14ce2b2a1c097629adecdeb1522a1e0a2ca390673446c930ca5fd11d2',
                 links => [
-                    { rel => "describedby", href => "schema",   method => "GET"    },
-                    { rel => "list",        href => "",         method => "GET"    },
                     { rel => "create",      href => "create",   method => "POST"   },
-                    { rel => "read",        href => "1",        method => "GET"    },
-                    { rel => "edit",        href => "1/edit",   method => "PUT"    },
                     { rel => "delete",      href => "1/delete", method => "DELETE" },
+                    { rel => "describedby", href => "schema",   method => "GET"    },
+                    { rel => "edit",        href => "1/edit",   method => "PUT"    },
+                    { rel => "list",        href => "",         method => "GET"    },
+                    { rel => "read",        href => "1",        method => "GET"    }
                 ]
             },
             '... got the right value for creation'
@@ -152,12 +153,12 @@ test_psgi( app => $app, client => sub {
                     },
                     version => 'fe982ce14ce2b2a1c097629adecdeb1522a1e0a2ca390673446c930ca5fd11d2',
                     links => [
-                        { rel => "describedby", href => "schema",   method => "GET"    },
-                        { rel => "list",        href => "",         method => "GET"    },
                         { rel => "create",      href => "create",   method => "POST"   },
-                        { rel => "read",        href => "1",        method => "GET"    },
-                        { rel => "edit",        href => "1/edit",   method => "PUT"    },
                         { rel => "delete",      href => "1/delete", method => "DELETE" },
+                        { rel => "describedby", href => "schema",   method => "GET"    },
+                        { rel => "edit",        href => "1/edit",   method => "PUT"    },
+                        { rel => "list",        href => "",         method => "GET"    },
+                        { rel => "read",        href => "1",        method => "GET"    }
                     ]
                 },
             ],
@@ -181,12 +182,12 @@ test_psgi( app => $app, client => sub {
                 },
                 version => 'fe982ce14ce2b2a1c097629adecdeb1522a1e0a2ca390673446c930ca5fd11d2',
                 links => [
-                    { rel => "describedby", href => "schema",   method => "GET"    },
-                    { rel => "list",        href => "",         method => "GET"    },
                     { rel => "create",      href => "create",   method => "POST"   },
-                    { rel => "read",        href => "1",        method => "GET"    },
-                    { rel => "edit",        href => "1/edit",   method => "PUT"    },
                     { rel => "delete",      href => "1/delete", method => "DELETE" },
+                    { rel => "describedby", href => "schema",   method => "GET"    },
+                    { rel => "edit",        href => "1/edit",   method => "PUT"    },
+                    { rel => "list",        href => "",         method => "GET"    },
+                    { rel => "read",        href => "1",        method => "GET"    }
                 ]
             },
             '... got the right value for read'
@@ -218,12 +219,12 @@ test_psgi( app => $app, client => sub {
                 },
                 version => '9d4a75302bb634edf050d6b838b050b978bea1460d5879618e8e3ae8c291247f',
                 links => [
-                    { rel => "describedby", href => "schema",   method => "GET"    },
-                    { rel => "list",        href => "",         method => "GET"    },
                     { rel => "create",      href => "create",   method => "POST"   },
-                    { rel => "read",        href => "1",        method => "GET"    },
-                    { rel => "edit",        href => "1/edit",   method => "PUT"    },
                     { rel => "delete",      href => "1/delete", method => "DELETE" },
+                    { rel => "describedby", href => "schema",   method => "GET"    },
+                    { rel => "edit",        href => "1/edit",   method => "PUT"    },
+                    { rel => "list",        href => "",         method => "GET"    },
+                    { rel => "read",        href => "1",        method => "GET"    }
                 ]
             },
             '... got the right value for edit'
@@ -280,12 +281,12 @@ test_psgi( app => $app, client => sub {
                 },
                 version => '9d4a75302bb634edf050d6b838b050b978bea1460d5879618e8e3ae8c291247f',
                 links => [
-                    { rel => "describedby", href => "schema",   method => "GET"    },
-                    { rel => "list",        href => "",         method => "GET"    },
                     { rel => "create",      href => "create",   method => "POST"   },
-                    { rel => "read",        href => "1",        method => "GET"    },
-                    { rel => "edit",        href => "1/edit",   method => "PUT"    },
                     { rel => "delete",      href => "1/delete", method => "DELETE" },
+                    { rel => "describedby", href => "schema",   method => "GET"    },
+                    { rel => "edit",        href => "1/edit",   method => "PUT"    },
+                    { rel => "list",        href => "",         method => "GET"    },
+                    { rel => "read",        href => "1",        method => "GET"    }
                 ]
             },
             '... got the right value for read'
@@ -349,12 +350,12 @@ test_psgi( app => $app, client => sub {
                 },
                 version => 'fe982ce14ce2b2a1c097629adecdeb1522a1e0a2ca390673446c930ca5fd11d2',
                 links => [
-                    { rel => "describedby", href => "schema",   method => "GET"    },
-                    { rel => "list",        href => "",         method => "GET"    },
                     { rel => "create",      href => "create",   method => "POST"   },
-                    { rel => "read",        href => "2",        method => "GET"    },
-                    { rel => "edit",        href => "2/edit",   method => "PUT"    },
                     { rel => "delete",      href => "2/delete", method => "DELETE" },
+                    { rel => "describedby", href => "schema",   method => "GET"    },
+                    { rel => "edit",        href => "2/edit",   method => "PUT"    },
+                    { rel => "list",        href => "",         method => "GET"    },
+                    { rel => "read",        href => "2",        method => "GET"    }
                 ]
             },
             '... got the right value for creation'
